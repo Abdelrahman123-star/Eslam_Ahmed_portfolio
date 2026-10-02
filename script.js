@@ -22,6 +22,106 @@ document.addEventListener("DOMContentLoaded", function () {
     revealItems.forEach(function (el) { revealIO.observe(el); });
   }
 
+  // ─── 0. Render Work Folders from videos.js ─────────────────
+  function renderWorkFolders() {
+    var grid = document.querySelector(".folders-grid-4");
+    if (!grid) return;
+
+    var videos = window.myWorkVideos || (typeof myWorkVideos !== "undefined" ? myWorkVideos : null);
+    if (!videos || !videos.length) return;
+
+    grid.innerHTML = videos.map(function (item, idx) {
+      var folderLabel = item.folder || ("RightWay");
+      var category = item.category || "reels";
+      var src = item.src || "";
+      var title = item.title || ("Video");
+      var tag = item.tag || (category === "rightway" ? "Commercial Reel" : "Reel");
+      var sub = item.subtitle || (category === "rightway" ? "Rightway Real Estate" : "Reel Project");
+      var ig = item.instagram || item.ig || "";
+      var tiktok = item.tiktok || "";
+
+      var socialIconsHtml = "";
+      if (ig || tiktok) {
+        socialIconsHtml = '<div class="flex items-center gap-1 mr-1">';
+        if (ig) {
+          socialIconsHtml += '<a href="' + ig + '" target="_blank" rel="noopener noreferrer" class="folder-social-icon ig" title="Watch on Instagram" onclick="event.stopPropagation();">' +
+            '<img src="ig_icon.jpg" alt="Instagram">' +
+            '</a>';
+        }
+        if (tiktok) {
+          socialIconsHtml += '<a href="' + tiktok + '" target="_blank" rel="noopener noreferrer" class="folder-social-icon tiktok" title="Watch on TikTok" onclick="event.stopPropagation();">' +
+            '<img src="tiktok_logo.jpg" alt="TikTok">' +
+            '</a>';
+        }
+        socialIconsHtml += '</div>';
+      }
+
+      return '<div class="folder-card" data-category="' + category + '" data-video-src="' + src + '"' +
+        ' data-video-title="' + title + '" data-video-tag="' + tag + '"' +
+        ' data-video-instagram="' + ig + '" data-video-tiktok="' + tiktok + '">' +
+        '<div class="folder-tab-bar">' +
+        '  <div class="folder-tab">' +
+        '    <svg class="folder-icon" viewBox="0 0 24 24" fill="currentColor">' +
+        '      <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-1.5V9a3 3 0 0 0-3-3h-3.379a3 3 0 0 1-2.121-.879L8.379 4.04A3 3 0 0 0 6.257 3.16H4.5A3 3 0 0 0 1.5 6.16v11.84a3 3 0 0 0 3 3h15Z" />' +
+        '    </svg>' +
+        '    <span>' + folderLabel + '</span>' +
+        '  </div>' +
+        '  <span class="folder-tag">MP4</span>' +
+        '</div>' +
+        '<div class="folder-sleeve">' +
+        '  <div class="folder-cover">' +
+        '    <video class="folder-video" preload="none" muted playsinline loop>' +
+        '      <source src="' + src + '" type="video/mp4">' +
+        '    </video>' +
+        '    <div class="folder-cover-overlay">' +
+        '      <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-white/80">' +
+        '        <span class="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10">MP4</span>' +
+        '        <span class="bg-primary/90 text-primary-foreground font-semibold px-2 py-0.5 rounded">HD</span>' +
+        '      </div>' +
+        '      <div>' +
+        '        <span class="text-xs font-mono uppercase tracking-wider text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">' + tag + '</span>' +
+        '      </div>' +
+        '    </div>' +
+        '    <div class="folder-play-center">' +
+        '      <div class="folder-play-btn" title="Open Folder Video">' +
+        '        <svg class="size-5 ml-0.5 fill-current" viewBox="0 0 24 24">' +
+        '          <polygon points="6 4 20 12 6 20 6 4"></polygon>' +
+        '        </svg>' +
+        '      </div>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="folder-meta">' +
+        '    <div class="min-w-0 flex-1">' +
+        '      <div class="folder-meta-title" title="' + title + '">' + title + '</div>' +
+        '      <div class="folder-meta-sub">' +
+        '        <span class="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]"></span>' +
+        '        <span class="truncate">' + sub + '</span>' +
+        '      </div>' +
+        '    </div>' +
+        '    <div class="flex items-center gap-1">' +
+        socialIconsHtml +
+        '    </div>' +
+        '  </div>' +
+        '</div>' +
+        '</div>';
+    }).join("\n");
+
+    // Dynamic Filter Button Counters
+    var allCount = videos.length;
+    var rwCount = videos.filter(function (v) { return v.category === "rightway"; }).length;
+    var reelCount = videos.filter(function (v) { return v.category === "reels"; }).length;
+
+    var allBtn = document.querySelector('.work-filter-btn[data-filter="all"]');
+    var rwBtn = document.querySelector('.work-filter-btn[data-filter="rightway"]');
+    var reelBtn = document.querySelector('.work-filter-btn[data-filter="reels"]');
+
+    if (allBtn) allBtn.textContent = "All Videos (" + allCount + ")";
+    if (rwBtn) rwBtn.textContent = "Rightway Real Estate (" + rwCount + ")";
+    if (reelBtn) reelBtn.textContent = "Reel Projects (" + reelCount + ")";
+  }
+
+  renderWorkFolders();
+
   // ─── 2. Lazy Video Loading  ──────────────────────────────
   // Videos only get their src assigned when the card scrolls
   // into view (near the viewport). Before that, zero bytes downloaded.
@@ -132,6 +232,31 @@ document.addEventListener("DOMContentLoaded", function () {
     modalVideo.muted = false;
     modalVideo.volume = 1.0;
 
+    var instagram = card.getAttribute("data-video-instagram") || "";
+    var tiktok = card.getAttribute("data-video-tiktok") || "";
+    var modalIg = document.getElementById("modalIgLink");
+    var modalTiktok = document.getElementById("modalTiktokLink");
+
+    if (modalIg) {
+      if (instagram && instagram.trim() !== "") {
+        modalIg.href = instagram;
+        modalIg.style.display = "inline-flex";
+      } else {
+        modalIg.style.display = "none";
+        modalIg.href = "#";
+      }
+    }
+
+    if (modalTiktok) {
+      if (tiktok && tiktok.trim() !== "") {
+        modalTiktok.href = tiktok;
+        modalTiktok.style.display = "inline-flex";
+      } else {
+        modalTiktok.style.display = "none";
+        modalTiktok.href = "#";
+      }
+    }
+
     modal.classList.add("open");
     document.body.style.overflow = "hidden";
 
@@ -149,6 +274,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.style.overflow = "";
     modalVideo.pause();
     modalVideo.src = "";
+
+    var modalIg = document.getElementById("modalIgLink");
+    var modalTiktok = document.getElementById("modalTiktokLink");
+    if (modalIg) { modalIg.style.display = "none"; modalIg.href = "#"; }
+    if (modalTiktok) { modalTiktok.style.display = "none"; modalTiktok.href = "#"; }
   }
 
   folderCards.forEach(function (card) {
